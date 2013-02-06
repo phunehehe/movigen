@@ -9,12 +9,10 @@ cd "$bin_dir"
 
 cat header.html > index.html
 
-for i in movies/*
+for f in movies/*
 do
-    for f in "$i"/*.mkv
-    do
-        b="$(basename "$f")"
-        echo "
+    b="$(basename "$f")"
+    echo "
 <li class='span4'>
     <div class='thumbnail'>
         <a href='$f'>
@@ -23,8 +21,7 @@ do
         <h3><a href='$f'>$b</a></h3>
     </div>
 </li>
-        " >> index.html
-    done
+    " >> index.html
 done
 
 cat footer.html >> index.html

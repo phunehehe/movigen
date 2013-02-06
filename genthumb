@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+
+bin_dir="$(cd "$(dirname "$0")" && pwd)"
+cd "$bin_dir"
+
+
+mkdir -p thumbnails
+
+
+for f in movies/*
+do
+    ffmpeg -itsoffset -120 -i "$f" -vframes 1 -s 600x400 "thumbnails/$(basename "$f").jpg"
+done
