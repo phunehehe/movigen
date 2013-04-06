@@ -10,7 +10,11 @@ cd "$bin_dir"
 mkdir -p thumbnails
 
 
-for f in movies/*
+for i in movies/*
 do
-    ffmpeg -itsoffset -120 -i "$f" -vframes 1 -s 600x400 "thumbnails/$(basename "$f").jpg"
+    for f in "$i"/*.mkv
+    do
+        thumbnail="thumbnails/$(basename "$f").jpg"
+        [[ -f "$thumbnail" ]] || ffmpeg -itsoffset -120 -i "$f" -vframes 1 -s 600x400 "$thumbnail"
+    done
 done

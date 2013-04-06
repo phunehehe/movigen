@@ -9,19 +9,27 @@ cd "$bin_dir"
 
 cat header.html > index.html
 
-for f in movies/*
+while read -d $'\0' file
 do
-    b="$(basename "$f")"
+
+    dir="$(basename "$(dirname "$file")")"
+    thumbnail="${file}.jpg"
+    subtitle="${file}-vi.srt"
+
+    [[ -f "$thumbnail" ]] || ffmpeg -itsoffset -120 -i "$file" -vframes 1 -s 600x400 "$thumbnail"
+
     echo "
 <li class='span4'>
     <div class='thumbnail'>
-        <a href='$f'>
-            <img src='thumbnails/$b.jpg' alt='' width='600'/>
+        <a href='$file'>
+            <img src='$file.jpg' alt='' width='600'/>
         </a>
-        <h3><a href='$f'>$b</a></h3>
+        <h3><a href='$file'>"$dir"</a></h3>
+        <a href='$subtitle'>Phụ đề</a>
     </div>
 </li>
     " >> index.html
-done
+
+done < <(find files/ -type f -regextype posix-extended -regex '.*\.(mkv|mp4|avi)' -print0 | sort -z)
 
 cat footer.html >> index.html
