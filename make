@@ -14,17 +14,17 @@ do
     thumbnail="${file}.jpg"
     subtitle="${file}-vi.srt"
 
-    echo "
+    cat <<EOH >> index.html
 <li class='span4'>
     <div class='thumbnail'>
-        <a href='$file'>
-            <img src='$thumbnail' alt='' width='600'/>
+        <a href="$file">
+            <img src="$thumbnail" alt='' width='600'/>
         </a>
-        <h3><a href='$file'>"$dir"</a></h3>
-        <a href='$subtitle'>Phụ đề</a>
+        <h3><a href="$file">$dir</a></h3>
+        <a href="$subtitle">Phụ đề</a>
     </div>
 </li>
-    " >> index.html
+EOH
 
 done < <(find files/ -type f \
                      -regextype posix-extended \
