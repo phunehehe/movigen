@@ -3,16 +3,25 @@
 set -e
 
 
+width=600
+height=400
+
 cd "$(dirname "$0")"
 
 while read -d $'\0' file
 do
     thumbnail="${file}.jpg"
-    [[ -f "$thumbnail" ]] || ffmpeg -itsoffset -120 \
-                                    -i "$file" \
-                                    -vframes 1 \
-                                    -vf 'scale=-1:400' \
-                                    "$thumbnail" < /dev/null
+    if [[ ! -f "$thumbnail" ]]
+    then
+        ffmpeg -itsoffset -120 \
+               -i "$file" \
+               -vframes 1 \
+               -vf "
+                   scale=iw*min($width/iw\,$height/ih):ih*min($width/iw\,$height/ih),
+                   pad=$width:$height:($width-iw)/2:($height-ih)/2
+               " \
+               "$thumbnail" < /dev/null
+    fi
 
 done < <(find -L \
               -type f \
