@@ -11,10 +11,11 @@ do
     [[ -f "$thumbnail" ]] || ffmpeg -itsoffset -120 \
                                     -i "$file" \
                                     -vframes 1 \
-                                    -s 600x400 \
+                                    -vf 'scale=-1:400' \
                                     "$thumbnail" < /dev/null
 
-done < <(find files/ -type f \
-                     -regextype posix-extended \
-                     -regex '.*\.(mkv|mp4|avi)' \
-                     -print0 | sort -z)
+done < <(find -L \
+              -type f \
+              -regextype posix-extended \
+              -regex '.*\.(mkv|mp4|avi)' \
+              -print0 | sort -z)
