@@ -3,18 +3,18 @@
 set -e
 
 
-bin_dir="$(cd "$(dirname "$0")" && pwd)"
-cd "$bin_dir"
+cd "$(dirname "$0")"
 
-
-mkdir -p thumbnails
-
-
-for i in movies/*
+while read -d $'\0' file
 do
-    for f in "$i"/*.mkv
-    do
-        thumbnail="thumbnails/$(basename "$f").jpg"
-        [[ -f "$thumbnail" ]] || ffmpeg -itsoffset -120 -i "$f" -vframes 1 -s 600x400 "$thumbnail"
-    done
-done
+    thumbnail="${file}.jpg"
+    [[ -f "$thumbnail" ]] || ffmpeg -itsoffset -120 \
+                                    -i "$file" \
+                                    -vframes 1 \
+                                    -s 600x400 \
+                                    "$thumbnail" < /dev/null
+
+done < <(find files/ -type f \
+                     -regextype posix-extended \
+                     -regex '.*\.(mkv|mp4|avi)' \
+                     -print0 | sort -z)
