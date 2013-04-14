@@ -29,7 +29,7 @@ for d, files in matches.iteritems():
     copyfile('header.html', index_fname)
     index_file = open(index_fname, 'a')
 
-    for f in files:
+    for f in sorted(files):
         base_dir = basename(dirname(f))
         base_file = basename(f)
         movie = {
@@ -39,11 +39,11 @@ for d, files in matches.iteritems():
         piece = '''
             <li class='span4'>
                 <div class='thumbnail'>
-                    <a href="%(file)s">
-                        <img src="%(file)s.jpg" alt='' width='600'/>
+                    <a href="./%(file)s">
+                        <img src="./%(file)s.jpg" alt='' width='600'/>
                     </a>
-                    <h3><a href="%(file)s">%(name)s</a></h3>
-                    <a href="%(file)s-vi.srt">Phụ đề</a>
+                    <h3><a href="./%(file)s">%(name)s</a></h3>
+                    <a href="./%(file)s-vi.srt">Phụ đề</a>
                 </div>
             </li>
         ''' % movie
