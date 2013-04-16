@@ -12,7 +12,7 @@ from shutil import copyfile
 regex = re.compile('.*\.(mkv|mp4|avi)$')
 matches = {}
 
-for root, dirs, files in os.walk('files'):
+for root, dirs, files in os.walk('files', followlinks=True):
     for name in files:
         if regex.match(name):
             f = os.path.join(root, name)
