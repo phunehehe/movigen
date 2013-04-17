@@ -38,11 +38,25 @@ for d, files in matches.items():
 
     for f in sorted(files):
 
-        base_dir = basename(dirname(f))
-        file_path = join(base_dir, basename(f))
+        # Count the number of movie files in the same dir. If there are more
+        # than one, we are dealing with a series
+        parent_dir = dirname(f)
+        count = 0
+        is_series = False
+        for name in os.listdir(parent_dir):
+            if regex.match(name):
+                count += 1
+                if count > 1:
+                    is_series = True
+                    break
+
+        parent_name = basename(parent_dir)
+        f_name = basename(f)
+        file_path = join(parent_name, f_name)
+        movie_name = '%s, %s' % (parent_name, f_name) if is_series else parent_name
 
         content += piece_template % {
-            'movie_name': base_dir,
+            'movie_name': movie_name,
             'movie_path': file_path,
             'subtitle_path': './%s-vi.srt' % file_path,
             'thumbnail_path': './%s.jpg' % file_path,
