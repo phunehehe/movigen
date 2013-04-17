@@ -3,10 +3,8 @@
 
 import re
 import os
-import fileinput
 
 from os.path import basename, dirname, join
-from shutil import copyfile
 
 
 regex = re.compile('.*\.(mkv|mp4|avi)$')
@@ -25,30 +23,34 @@ for root, dirs, files in os.walk('files', followlinks=True):
 
 for d, files in matches.items():
 
+    with open('header.html') as header_file:
+        header = header_file.read() % {
+            'set_name': basename(d)
+        }
+
+    with open('piece.html') as piece_file:
+        piece_template = piece_file.read()
+
+    with open('footer.html') as footer_file:
+        footer = footer_file.read()
+
+    content = ''
+
+    for f in sorted(files):
+
+        base_dir = basename(dirname(f))
+        file_path = join(base_dir, basename(f))
+
+        content += piece_template % {
+            'movie_name': base_dir,
+            'movie_path': file_path,
+            'subtitle_path': './%s-vi.srt' % file_path,
+            'thumbnail_path': './%s.jpg' % file_path,
+        }
+
     index_fname = '%s/index.html' % d
-    copyfile('header.html', index_fname)
 
-    with open(index_fname, 'a') as index_file:
-
-        for f in sorted(files):
-            base_dir = basename(dirname(f))
-            base_file = basename(f)
-            movie = {
-                'name': base_dir,
-                'file': join(base_dir, base_file),
-            }
-            piece = '''
-                <li class='span4'>
-                    <div class='thumbnail'>
-                        <a href="./%(file)s">
-                            <img src="./%(file)s.jpg" alt='' width='600'/>
-                        </a>
-                        <h3><a href="./%(file)s">%(name)s</a></h3>
-                        <a href="./%(file)s-vi.srt">Phụ đề</a>
-                    </div>
-                </li>
-            ''' % movie
-            index_file.write(piece)
-
-        for line in fileinput.input('footer.html'):
-            index_file.write(line)
+    with open(index_fname, 'w') as index_file:
+        index_file.write(header)
+        index_file.write(content)
+        index_file.write(footer)
