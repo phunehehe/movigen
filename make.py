@@ -23,15 +23,15 @@ for root, dirs, files in os.walk('files', followlinks=True):
 
 for d, files in matches.items():
 
-    with open('header.html') as header_file:
+    with open('templates/header.html') as header_file:
         header = header_file.read() % {
             'set_name': basename(d)
         }
 
-    with open('piece.html') as piece_file:
+    with open('templates/piece.html') as piece_file:
         piece_template = piece_file.read()
 
-    with open('footer.html') as footer_file:
+    with open('templates/footer.html') as footer_file:
         footer = footer_file.read()
 
     content = ''
