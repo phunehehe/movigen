@@ -47,8 +47,11 @@ def add_match(child_full):
             mg[parent].append(child)
 
 
-def generate_series_content(grandparent, parent, children):
+def process_series(grandparent, parent, children):
 
+    header = header_template % {
+        'set_name': parent,
+    }
     content = ''
 
     for child in children:
@@ -63,17 +66,23 @@ def generate_series_content(grandparent, parent, children):
             'thumbnail_path': './%s.jpg' % file_path,
         }
 
-    return content
+    with open(join(grandparent, parent, index_base), 'w') as index_file:
+        index_file.write(header)
+        index_file.write(content)
+        index_file.write(footer)
 
 
 def generate_single_content(grandparent, parents):
 
+    header = header_template % {
+        'set_name': basename(grandparent),
+    }
     content = ''
 
     for parent, children in parents.items():
 
         if len(children) > 1:
-            print('Fancy stuff needed for %s, %s' % (grandparent, parent))
+            process_series(grandparent, parent, children)
             continue
 
         child = children[0]
@@ -86,7 +95,13 @@ def generate_single_content(grandparent, parents):
             'thumbnail_path': './%s.jpg' % file_path,
         }
 
-    return content
+    if not content:
+        return
+
+    with open(join(grandparent, index_base), 'w') as index_file:
+        index_file.write(header)
+        index_file.write(content)
+        index_file.write(footer)
 
 
 for root, dirs, files in walk('files', followlinks=True):
@@ -94,15 +109,5 @@ for root, dirs, files in walk('files', followlinks=True):
         if regex.match(name):
             add_match(join(root, name))
 
-
 for grandparent, parents in matches.items():
-
-    header = header_template % {
-        'set_name': basename(grandparent),
-    }
-    content = generate_single_content(grandparent, parents)
-
-    with open(join(grandparent, index_base), 'w') as index_file:
-        index_file.write(header)
-        index_file.write(content)
-        index_file.write(footer)
+    generate_single_content(grandparent, parents)
