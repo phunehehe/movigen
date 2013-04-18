@@ -71,9 +71,12 @@ def generate_single_content(grandparent, parents):
     content = ''
 
     for parent, children in parents.items():
-        # Assumming there is only one child
-        child = children[0]
 
+        if len(children) > 1:
+            print('Fancy stuff needed for %s, %s' % (grandparent, parent))
+            continue
+
+        child = children[0]
         file_path = join(parent, child)
 
         content += piece_template % {
@@ -94,25 +97,12 @@ for root, dirs, files in walk('files', followlinks=True):
 
 for grandparent, parents in matches.items():
 
-    for parent, children in parents.items():
+    header = header_template % {
+        'set_name': basename(grandparent),
+    }
+    content = generate_single_content(grandparent, parents)
 
-        if len(children) > 1:
-            is_series = True
-            set_name = parent
-            index_fname = '%s/%s' % (join(grandparent, parent), index_base)
-            content = generate_series_content(grandparent, parent, children)
-        else:
-            is_series = False
-            movie_name = parent
-            set_name = basename(grandparent)
-            index_fname = '%s/%s' % (grandparent, index_base)
-            content = generate_single_content(grandparent, parents)
-
-        header = header_template % {
-            'set_name': set_name,
-        }
-
-    with open(index_fname, 'w') as index_file:
+    with open(join(grandparent, index_base), 'w') as index_file:
         index_file.write(header)
         index_file.write(content)
         index_file.write(footer)
