@@ -2,6 +2,10 @@ h3 {
     font-size: 14px;
 }
 
+.links {
+    height: 75px;
+}
+
 /* Hack to fix indentation http://stackoverflow.com/a/12215192/168034 */
 .thumbnails .span4:nth-child(3n+1) {
     margin-left: 0;
