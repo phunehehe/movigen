@@ -4,7 +4,7 @@
 import re
 
 from os import walk
-from os.path import basename, dirname, join
+from os.path import basename, dirname, join, isfile
 
 
 index_base = 'index.html'
@@ -59,11 +59,15 @@ def process_series(grandparent, parent, children):
         movie_name = '%s, %s' % (parent, child)
         file_path = child
 
+        subtitle_path = './%s-vi.srt' % file_path
+        if not isfile(subtitle_path):
+            subtitle_path = ''
+
         content += piece_template % {
             'movie_name': movie_name,
             'movie_path': file_path,
-            'subtitle_path': './%s-vi.srt' % file_path,
-            'thumbnail_path': './%s.jpg' % file_path,
+            'subtitle_path': subtitle_path,
+            'thumbnail_path': './thumbnails/%s.jpg' % file_path,
         }
 
     with open(join(grandparent, parent, index_base), 'w') as index_file:
