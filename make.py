@@ -29,6 +29,13 @@ with open('templates/footer.html') as footer_file:
     footer = footer_file.read()
 
 
+def get_subtitle_path(parent_full, file_path):
+    subtitle_path = './%s-vi.srt' % file_path
+    if not isfile(join(parent_full, subtitle_path)):
+        return ''
+    return subtitle_path
+
+
 def add_match(child_full):
 
     child = basename(child_full)
@@ -59,14 +66,10 @@ def process_series(grandparent, parent, children):
         movie_name = '%s, %s' % (parent, child)
         file_path = child
 
-        subtitle_path = './%s-vi.srt' % file_path
-        if not isfile(subtitle_path):
-            subtitle_path = ''
-
         content += piece_template % {
             'movie_name': movie_name,
             'movie_path': file_path,
-            'subtitle_path': subtitle_path,
+            'subtitle_path': get_subtitle_path(join(grandparent, parent), file_path),
             'thumbnail_path': './thumbnails/%s.jpg' % file_path,
         }
 
@@ -92,14 +95,10 @@ def generate_single_content(grandparent, parents):
         child = children[0]
         file_path = join(parent, child)
 
-        subtitle_path = './%s-vi.srt' % file_path
-        if not isfile(subtitle_path):
-            subtitle_path = ''
-
         content += piece_template % {
             'movie_name': parent,
             'movie_path': file_path,
-            'subtitle_path': subtitle_path,
+            'subtitle_path': get_subtitle_path(grandparent, file_path),
             'thumbnail_path': './%s.jpg' % file_path,
         }
 
