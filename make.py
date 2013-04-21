@@ -99,7 +99,7 @@ def generate_single_content(grandparent, parents):
             'movie_name': parent,
             'movie_path': file_path,
             'subtitle_path': get_subtitle_path(grandparent, file_path),
-            'thumbnail_path': './%s.jpg' % file_path,
+            'thumbnail_path': './%s/thumbnails/%s.jpg' % (parent, child),
         }
 
     if not content:
