@@ -61,7 +61,7 @@ def process_series(grandparent, parent, children):
     }
     content = ''
 
-    for child in children:
+    for child in sorted(children):
 
         movie_name = '%s, %s' % (parent, child)
         file_path = child
@@ -86,7 +86,7 @@ def generate_single_content(grandparent, parents):
     }
     content = ''
 
-    for parent, children in parents.items():
+    for parent, children in sorted(parents.items()):
 
         if len(children) > 1:
             process_series(grandparent, parent, children)
