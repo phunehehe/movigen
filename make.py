@@ -4,7 +4,35 @@
 import re
 
 from os import walk
-from os.path import basename, dirname, join, isfile
+from os.path import basename, dirname, join, isfile, split
+
+
+class Directory:
+
+    sub_dirs = {}
+    files = set()
+
+    def add_file(self, name):
+        files.add(name)
+
+    def add_sub_dir(self, sub_dir):
+        if name not in sub_dirs:
+            sub_dirs[name] = sub_dir
+
+    def add_sub_dirs(self, names):
+        '''Create and add a nested directory for each name in names'''
+        if not names:
+            return
+        sub_dir = Directory()
+        sub_dir.add_sub_dirs(names[1:])
+        self.add_sub_dir(sub_dir)
+
+
+def path_split(path):
+    head, tail = split(path)
+    if not head:
+        return [tail]
+    return path_split(head).append(tail)
 
 
 index_base = 'index.html'
