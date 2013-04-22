@@ -35,28 +35,6 @@ def path_split(path):
     return path_split(head).append(tail)
 
 
-index_base = 'index.html'
-matches = {
-#   '/root/grandparent': {
-#       'parent': [
-#           'file1',
-#           'file2',
-#       ]
-#   }
-}
-regex = re.compile('.*\.(mkv|mp4|avi)$')
-
-
-with open('templates/header.html') as header_file:
-    header_template = header_file.read()
-
-with open('templates/piece.html') as piece_file:
-    piece_template = piece_file.read()
-
-with open('templates/footer.html') as footer_file:
-    footer = footer_file.read()
-
-
 def get_subtitle_path(parent_full, file_path):
     subtitle_path = './%s-vi.srt' % file_path
     if not isfile(join(parent_full, subtitle_path)):
@@ -80,6 +58,28 @@ def add_match(child_full):
             mg[parent] = [child]
         else:
             mg[parent].append(child)
+
+
+index_base = 'index.html'
+matches = {
+#   '/root/grandparent': {
+#       'parent': [
+#           'file1',
+#           'file2',
+#       ]
+#   }
+}
+regex = re.compile('.*\.(mkv|mp4|avi)$')
+
+
+with open('templates/header.html') as header_file:
+    header_template = header_file.read()
+
+with open('templates/piece.html') as piece_file:
+    piece_template = piece_file.read()
+
+with open('templates/footer.html') as footer_file:
+    footer = footer_file.read()
 
 
 def process_series(grandparent, parent, children):
