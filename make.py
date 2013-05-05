@@ -3,73 +3,61 @@
 
 import re
 
-from os import walk
-from os.path import basename, dirname, join, isfile, split
+from os import walk, path
+
+
+INDEX_BASE = 'index.html'
+MOVIE_EXTENSIONS = (
+    'avi',
+    'mkv',
+    'mp4',
+)
+MOVIE_REGEX = re.compile('.*\.(%s)$' % '|'.join(MOVIE_EXTENSIONS))
 
 
 class Directory:
 
-    sub_dirs = {}
-    files = set()
+    def __init__(self, path):
+        self.path = path
+        self.directories = {}
+        self.files = set()
 
     def add_file(self, name):
-        files.add(name)
+        self.files.add(name)
 
-    def add_sub_dir(self, sub_dir):
-        if name not in sub_dirs:
-            sub_dirs[name] = sub_dir
+    def add_nested_directories(self, names):
+        '''Create and add a nested directory for each name
 
-    def add_sub_dirs(self, names):
-        '''Create and add a nested directory for each name in names'''
+        Return the directory nested most deeply
+
+        '''
         if not names:
-            return
-        sub_dir = Directory()
-        sub_dir.add_sub_dirs(names[1:])
-        self.add_sub_dir(sub_dir)
+            return self
+        new_path = names[0]
+        try:
+            directory = self.directories[new_path]
+        except KeyError:
+            directory = Directory(path.join(self.path, new_path))
+            self.directories[new_path] = directory
+        return directory.add_nested_directories(names[1:])
 
 
-def path_split(path):
-    head, tail = split(path)
+def path_split(p):
+    '''Split a path into components'''
+    head, tail = path.split(p)
     if not head:
         return [tail]
-    return path_split(head).append(tail)
+    head_parts = path_split(head)
+    head_parts.append(tail)
+    return head_parts
 
 
 def get_subtitle_path(parent_full, file_path):
+    # TODO: i18n
     subtitle_path = './%s-vi.srt' % file_path
-    if not isfile(join(parent_full, subtitle_path)):
+    if not path.isfile(path.join(parent_full, subtitle_path)):
         return ''
     return subtitle_path
-
-
-def add_match(child_full):
-
-    child = basename(child_full)
-    parent_full = dirname(child_full)
-
-    parent = basename(parent_full)
-    grandparent = dirname(parent_full)
-
-    if grandparent not in matches:
-        matches[grandparent] = {parent: [child]}
-    else:
-        mg = matches[grandparent]
-        if parent not in mg:
-            mg[parent] = [child]
-        else:
-            mg[parent].append(child)
-
-
-index_base = 'index.html'
-matches = {
-#   '/root/grandparent': {
-#       'parent': [
-#           'file1',
-#           'file2',
-#       ]
-#   }
-}
-regex = re.compile('.*\.(mkv|mp4|avi)$')
 
 
 with open('templates/header.html') as header_file:
@@ -82,67 +70,47 @@ with open('templates/footer.html') as footer_file:
     footer = footer_file.read()
 
 
-def process_series(grandparent, parent, children):
+def process_directory(directory):
 
-    header = header_template % {
-        'set_name': parent,
-    }
-    content = ''
+    parent = directory.path
+    children = directory.files
 
-    for child in sorted(children):
+    if children:
 
-        movie_name = '%s, %s' % (parent, child)
-        file_path = child
-
-        content += piece_template % {
-            'movie_name': movie_name,
-            'movie_path': file_path,
-            'subtitle_path': get_subtitle_path(join(grandparent, parent), file_path),
-            'thumbnail_path': './thumbnails/%s.jpg' % file_path,
+        set_name = path.basename(parent)
+        header = header_template % {
+            'set_name': set_name,
         }
+        content = ''
 
-    with open(join(grandparent, parent, index_base), 'w') as index_file:
-        index_file.write(header)
-        index_file.write(content)
-        index_file.write(footer)
+        for child in sorted(children):
+
+            movie_name = '%s, %s' % (set_name, child)
+            file_path = child
+
+            content += piece_template % {
+                'movie_name': movie_name,
+                'movie_path': file_path,
+                'subtitle_path': get_subtitle_path(parent, file_path),
+                'thumbnail_path': './thumbnails/%s.jpg' % file_path,
+            }
+
+        with open(path.join(parent, INDEX_BASE), 'w') as index_file:
+            index_file.write(header)
+            index_file.write(content)
+            index_file.write(footer)
+
+    for sub_dir in directory.directories.values():
+        process_directory(sub_dir)
 
 
-def generate_single_content(grandparent, parents):
-
-    header = header_template % {
-        'set_name': basename(grandparent),
-    }
-    content = ''
-
-    for parent, children in sorted(parents.items()):
-
-        if len(children) > 1:
-            process_series(grandparent, parent, children)
-            continue
-
-        child = children[0]
-        file_path = join(parent, child)
-
-        content += piece_template % {
-            'movie_name': parent,
-            'movie_path': file_path,
-            'subtitle_path': get_subtitle_path(grandparent, file_path),
-            'thumbnail_path': './%s/thumbnails/%s.jpg' % (parent, child),
-        }
-
-    if not content:
-        return
-
-    with open(join(grandparent, index_base), 'w') as index_file:
-        index_file.write(header)
-        index_file.write(content)
-        index_file.write(footer)
-
+root_directory = Directory('.')
 
 for root, dirs, files in walk('files', followlinks=True):
     for name in files:
-        if regex.match(name):
-            add_match(join(root, name))
+        if MOVIE_REGEX.match(name):
+            parts = path_split(root)
+            parent_directory = root_directory.add_nested_directories(parts)
+            parent_directory.add_file(name)
 
-for grandparent, parents in matches.items():
-    generate_single_content(grandparent, parents)
+process_directory(root_directory)
