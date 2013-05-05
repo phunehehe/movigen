@@ -72,33 +72,46 @@ with open('templates/footer.html') as footer_file:
 
 def process_directory(directory):
 
-    parent = directory.path
-    children = directory.files
+    directory_path = directory.path
 
-    if children:
+    set_name = path.basename(directory_path)
+    header = header_template % {
+        'set_name': set_name,
+    }
+    content = ''
 
-        set_name = path.basename(parent)
-        header = header_template % {
-            'set_name': set_name,
+    for base_sub_dir, sub_dir in sorted(directory.directories.items()):
+        if len(sub_dir.files) == 1:
+            base_file_path = sub_dir.files.pop()
+            movie_path = path.join(base_sub_dir, base_file_path)
+            subtitle_path = get_subtitle_path(directory_path, movie_path)
+            thumbnail_path = './%s/thumbnails/%s.jpg' % (base_sub_dir, base_file_path)
+        else:
+            movie_path = base_sub_dir
+            subtitle_path = ''
+            thumbnail_path = ''
+        content += piece_template % {
+            'movie_name': base_sub_dir,
+            'movie_path': movie_path,
+            'subtitle_path': subtitle_path,
+            'thumbnail_path': thumbnail_path,
         }
-        content = ''
 
-        for child in sorted(children):
+    for file_path in sorted(directory.files):
 
-            movie_name = '%s, %s' % (set_name, child)
-            file_path = child
+        movie_name = '%s, %s' % (set_name, file_path)
 
-            content += piece_template % {
-                'movie_name': movie_name,
-                'movie_path': file_path,
-                'subtitle_path': get_subtitle_path(parent, file_path),
-                'thumbnail_path': './thumbnails/%s.jpg' % file_path,
-            }
+        content += piece_template % {
+            'movie_name': movie_name,
+            'movie_path': file_path,
+            'subtitle_path': get_subtitle_path(directory_path, file_path),
+            'thumbnail_path': './thumbnails/%s.jpg' % file_path,
+        }
 
-        with open(path.join(parent, INDEX_BASE), 'w') as index_file:
-            index_file.write(header)
-            index_file.write(content)
-            index_file.write(footer)
+    with open(path.join(directory_path, INDEX_BASE), 'w') as index_file:
+        index_file.write(header)
+        index_file.write(content)
+        index_file.write(footer)
 
     for sub_dir in directory.directories.values():
         process_directory(sub_dir)
