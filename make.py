@@ -54,7 +54,7 @@ def path_split(p):
 
 def get_subtitle_path(parent_full, file_path):
     # TODO: i18n
-    subtitle_path = './%s-vi.srt' % file_path
+    subtitle_path = './%s.srt' % file_path
     if not path.isfile(path.join(parent_full, subtitle_path)):
         return ''
     return subtitle_path
@@ -83,16 +83,18 @@ def process_directory(directory):
     for base_sub_dir, sub_dir in sorted(directory.directories.items()):
         if len(sub_dir.files) == 1:
             base_file_path = sub_dir.files.pop()
+            base_name, _ = path.splitext(base_file_path)
             movie_path = path.join(base_sub_dir, base_file_path)
-            subtitle_path = get_subtitle_path(directory_path, movie_path)
-            thumbnail_path = './%s/thumbnails/%s.jpg' % (base_sub_dir, base_file_path)
+            name, _ = path.splitext(movie_path)
+            subtitle_path = get_subtitle_path(directory_path, name)
+            thumbnail_path = './%s/thumbnails/%s.jpg' % (base_sub_dir, base_name)
         else:
             movie_path = base_sub_dir
             subtitle_path = ''
             thumbnail_path = ''
         content += piece_template % {
             'movie_name': base_sub_dir,
-            'movie_path': movie_path,
+            'movie_path': './%s' % movie_path,
             'subtitle_path': subtitle_path,
             'thumbnail_path': thumbnail_path,
         }
@@ -100,12 +102,13 @@ def process_directory(directory):
     for file_path in sorted(directory.files):
 
         movie_name = '%s, %s' % (set_name, file_path)
+        name, _ = path.splitext(file_path)
 
         content += piece_template % {
             'movie_name': movie_name,
-            'movie_path': file_path,
-            'subtitle_path': get_subtitle_path(directory_path, file_path),
-            'thumbnail_path': './thumbnails/%s.jpg' % file_path,
+            'movie_path': './%s' % file_path,
+            'subtitle_path': get_subtitle_path(directory_path, name),
+            'thumbnail_path': './thumbnails/%s.jpg' % name,
         }
 
     with open(path.join(directory_path, INDEX_BASE), 'w') as index_file:
