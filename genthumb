@@ -12,7 +12,8 @@ while read -d $'\0' file
 do
 
     thumbnail_dir="$(dirname "$file")/thumbnails"
-    thumbnail="$thumbnail_dir/$(basename "$file").jpg"
+    file_base="$(basename "$file")"
+    thumbnail="$thumbnail_dir/${file_base%.*}.jpg"
     mkdir -p "$thumbnail_dir"
 
     if [[ ! -f "$thumbnail" ]]
