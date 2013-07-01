@@ -1,18 +1,38 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import json
 import re
 
+from itertools import chain
 from os import walk, path
 
 
 INDEX_BASE = 'index.html'
+
 MOVIE_EXTENSIONS = (
     'avi',
     'mkv',
     'mp4',
 )
+
 MOVIE_REGEX = re.compile('.*\.(%s)$' % '|'.join(MOVIE_EXTENSIONS))
+
+with open('templates/header.html') as header_file:
+    HEADER_TEMPLATE = header_file.read()
+
+with open('templates/piece.html') as piece_file:
+    PIECE_TEMPLATE = piece_file.read()
+
+with open('templates/footer.html') as footer_file:
+    FOOTER = footer_file.read()
+
+try:
+    with open('translations/active.json') as translation_file:
+        TRANSLATIONS = json.load(translation_file)
+except IOError:
+    with open('translations/default.json') as translation_file:
+        TRANSLATIONS = json.load(translation_file)
 
 
 class Directory:
@@ -42,6 +62,10 @@ class Directory:
         return directory.add_nested_directories(names[1:])
 
 
+def apply_template(template, values):
+    return template % dict(chain(TRANSLATIONS.items(), values.items()))
+
+
 def path_split(p):
     '''Split a path into components'''
     head, tail = path.split(p)
@@ -60,24 +84,14 @@ def get_subtitle_path(parent_full, file_path):
     return subtitle_path
 
 
-with open('templates/header.html') as header_file:
-    header_template = header_file.read()
-
-with open('templates/piece.html') as piece_file:
-    piece_template = piece_file.read()
-
-with open('templates/footer.html') as footer_file:
-    footer = footer_file.read()
-
-
 def process_directory(directory):
 
     directory_path = directory.path
 
     set_name = path.basename(directory_path)
-    header = header_template % {
+    header = apply_template(HEADER_TEMPLATE, {
         'set_name': set_name,
-    }
+    })
     content = ''
 
     for base_sub_dir, sub_dir in sorted(directory.directories.items()):
@@ -92,29 +106,29 @@ def process_directory(directory):
             movie_path = base_sub_dir
             subtitle_path = ''
             thumbnail_path = ''
-        content += piece_template % {
+        content += apply_template(PIECE_TEMPLATE, {
             'movie_name': base_sub_dir,
             'movie_path': './%s' % movie_path,
             'subtitle_path': subtitle_path,
             'thumbnail_path': thumbnail_path,
-        }
+        })
 
     for file_path in sorted(directory.files):
 
         movie_name = '%s, %s' % (set_name, file_path)
         name, _ = path.splitext(file_path)
 
-        content += piece_template % {
+        content += apply_template(PIECE_TEMPLATE, {
             'movie_name': movie_name,
             'movie_path': './%s' % file_path,
             'subtitle_path': get_subtitle_path(directory_path, name),
             'thumbnail_path': './thumbnails/%s.jpg' % name,
-        }
+        })
 
     with open(path.join(directory_path, INDEX_BASE), 'w') as index_file:
         index_file.write(header)
         index_file.write(content)
-        index_file.write(footer)
+        index_file.write(FOOTER)
 
     for sub_dir in directory.directories.values():
         process_directory(sub_dir)

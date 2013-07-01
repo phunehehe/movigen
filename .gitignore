@@ -1,3 +1,4 @@
 *.swp
 /files
 /index.html
+/translations/active.json
