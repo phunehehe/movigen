@@ -14,6 +14,7 @@ MOVIE_EXTENSIONS = (
     'avi',
     'mkv',
     'mp4',
+    'ogm',
 )
 
 MOVIE_REGEX = re.compile('.*\.(%s)$' % '|'.join(MOVIE_EXTENSIONS))

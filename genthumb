@@ -31,5 +31,5 @@ do
 done < <(find -L \
               -type f \
               -regextype posix-extended \
-              -regex '.*\.(mkv|mp4|avi)' \
+              -regex '.*\.(ogm|mkv|mp4|avi)' \
               -print0 | sort -z)
